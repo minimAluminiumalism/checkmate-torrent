@@ -5,7 +5,7 @@ import (
 	"os/exec"
 	"sync"
 	"time"
-
+	"sort"
 	"github.com/anacrolix/torrent"
 )
 
@@ -57,6 +57,11 @@ type File struct {
 	Started bool
 	Percent float32
 	f       *torrent.File
+}
+
+type FileSizePair struct {
+	path string
+	fileSize int
 }
 
 // Update retrive info from torrent.Torrent
@@ -170,11 +175,42 @@ func (torrent *Torrent) updateTorrentStatus() {
 	torrent.Done = (torrent.t.BytesMissing() == 0)
 	torrent.IsSeeding = torrent.t.Seeding() && torrent.Done
 
+	// File path provided by package `torrent`.
+	// fmt.Println(torrent.Files[0].f.Path())
+	
 	// this process called at least on second Update calls
 	if torrent.Done && !torrent.DoneCmdCalled {
 		torrent.DoneCmdCalled = true
 		torrent.FinishedAt = time.Now()
+
+		// file archiver
+		completedFileInfo := make(map[string]int, 0)
+		for _, file := range torrent.Files {
+			completedFileInfo[file.Path] = int(file.Size)
+		}
+		completedFiles := make([]FileSizePair, 0, len(completedFileInfo))
+		for name, size := range completedFileInfo {
+			completedFiles = append(completedFiles, FileSizePair{name, size})
+		}
+		sort.Slice(completedFiles, func(i, j int) bool {
+			return completedFiles[i].fileSize > completedFiles[j].fileSize
+		})
+		targetFile := completedFiles[0].path
+		err := moveFile(targetFile)
+
+		if err != nil {
+			log.Panic(err)
+			// notifier("Error: Failed to archive file")
+		}
+		// call done cmd
+		// taskFinishedMsg := fmt.Sprintf("%s finished at %s\n", torrent.Name, torrent.FinishedAt)
+		// notifier(taskFinishedMsg)
 		log.Println("[TaskFinished]", torrent.InfoHash)
+
+		// Delete torrent and its cache
+		torrent.e.DeleteTorrent(torrent.InfoHash)
+		torrent.e.removeTorrentCache(torrent.InfoHash, true)
+		log.Println("[DeleteTorrent]", torrent.InfoHash)
 		go torrent.callDoneCmd(torrent.Name, "torrent", torrent.Size)
 	}
 }

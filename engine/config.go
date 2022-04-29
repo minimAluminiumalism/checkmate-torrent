@@ -80,7 +80,7 @@ func InitConf(specPath *string) (*Config, error) {
 	viper.SetDefault("SeedTime", "0")
 	viper.SetDefault("ObfsPreferred", true)
 	viper.SetDefault("ObfsRequirePreferred", false)
-	viper.SetDefault("IncomingPort", 50007)
+	viper.SetDefault("IncomingPort", 50008)
 	viper.SetDefault("MaxConcurrentTask", 0)
 	viper.SetDefault("AllowRuntimeConfigure", true)
 

@@ -1,4 +1,4 @@
-module github.com/boypt/simple-torrent
+module github.com/minimAluminiumalism/simple-torrent
 
 go 1.17
 
@@ -39,6 +39,8 @@ require (
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac
 	gopkg.in/yaml.v2 v2.4.0
 )
+
+require github.com/boypt/simple-torrent v0.0.0-00010101000000-000000000000
 
 require (
 	github.com/PuerkitoBio/goquery v1.5.1 // indirect
@@ -131,3 +133,5 @@ require (
 )
 
 replace github.com/jpillora/velox => github.com/boypt/velox v0.0.0-20210702064309-321adb7223d6
+
+replace github.com/boypt/simple-torrent => github.com/minimAluminiumalism/simple-torrent v0.0.0-20211223021932-6f4942933b71
